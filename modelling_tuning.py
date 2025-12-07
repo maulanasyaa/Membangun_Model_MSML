@@ -1,9 +1,11 @@
 import dagshub
+import matplotlib.pyplot as plt
 import mlflow
 import pandas as pd
+import seaborn as sns
 from scipy.stats import randint, uniform
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
@@ -106,6 +108,34 @@ def modelling(X, y):
         test_acc = accuracy_score(y_test, y_pred_test)
 
         mlflow.log_metric("test_accuracy_score", test_acc)
+
+        # add 2 artifact
+        print("Adding artifacts..")
+        # confusion matrix
+        plt.figure(figsize=(10, 7))
+        cm = confusion_matrix(y_test, y_pred_test)
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+        plt.title("Confusion Matrix - Test Data")
+        plt.ylabel("Actual")
+        plt.xlabel("Predicted")
+        plt.savefig("confusion_matrix.png")
+        mlflow.log_artifact("confusion_matrix.png")
+
+        # feature importance
+        if hasattr(best_model, "feature_importances_"):
+            plt.figure(figsize=(10, 7))
+            feature_importances = best_model.feature_importances_
+            features = X.columns
+
+            # dataframe
+            fi_df = pd.DataFrame(
+                {"Feature": features, "Importance": feature_importances}
+            ).sort_values(by="Importance", ascending=False)
+
+            sns.barplot(x="Importance", y="Feature", data=fi_df)
+            plt.title("Feature Importances")
+            plt.savefig("feature_importances.png")
+            mlflow.log_artifact("feature_importances.png")
 
     print("Modelling complete.")
 
