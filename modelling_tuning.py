@@ -123,7 +123,7 @@ def modelling(X, y):
 
         # feature importance
         if hasattr(best_model, "feature_importances_"):
-            plt.figure(figsize=(10, 7))
+            plt.figure(figsize=(15, 7))
             feature_importances = best_model.feature_importances_
             features = X.columns
 
